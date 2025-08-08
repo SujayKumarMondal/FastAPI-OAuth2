@@ -8,6 +8,7 @@ A simple and secure FastAPI application implementing **OAuth2 with JWT**, user d
 
 ![HTML Screen](images/image.png)
 ![Swagger Screen](images/image_2.png)
+![Authorization Complete](images/image_3.png)
 
 
 ### 📁 Features
