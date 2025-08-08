@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>FastAPI Auth App</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            font-family: system-ui, sans-serif;
+            background-color: #f4f6f8;
+            margin: 0;
+            padding: 0;
+        }
+        header {
+            background-color: #0077cc;
+            color: white;
+            padding: 1rem 2rem;
+            text-align: center;
+        }
+        main {
+            padding: 2rem;
+            max-width: 800px;
+            margin: auto;
+            background-color: white;
+            margin-top: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        h1, h2, h3 {
+            margin-top: 0;
+        }
+        ul {
+            padding-left: 1.5rem;
+        }
+        footer {
+            text-align: center;
+            margin-top: 4rem;
+            color: #999;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>🚀 FastAPI Auth Project</h1>
+    </header>
+
+    <main>
+        <h2>Welcome!</h2>
+        <p>This is a simple FastAPI application with user authentication using OAuth2 and JWT.</p>
+        <p>You can use this as a starter template to build secure APIs.</p>
+
+        <h3>How it Works</h3>
+        <p>
+            At first, the user must authorize their account using their <strong>username</strong> (first name) and <strong>password</strong>.
+            Only users who have a valid <strong>Google Client ID</strong> and <strong>Client Secret</strong> will be authorized.
+            If you don't have these credentials, you can create them from your <a href="https://console.cloud.google.com/" target="_blank">Google Cloud Console</a>.
+        </p>
+        <p>
+            All user data is securely stored in a <strong>MySQL database</strong> and fetched dynamically during authentication.
+        </p>
+
+        <h3>Useful Endpoints</h3>
+        <ul>
+            <li><code>POST /token</code> – Get a JWT token by providing Username, Password, Client ID, and Client Secret</li>
+            <li><code>GET /users/me</code> – Get the current logged-in user's data (requires token)</li>
+            <li><code>GET /users/me/items</code> – Access protected user-specific items (requires token)</li>
+        </ul>
+    </main>
+
+    <footer>
+        <p>&copy; <span id="year"></span> FastAPI Project</p>
+        <p>
+            <a href="https://github.com/SujayKumarMondal" target="_blank" style="margin-right: 1rem; text-decoration: none; color: #333;">
+                🔗 GitHub
+            </a>
+            <a href="https://www.linkedin.com/in/sujay-kumar-mondal-a125481b7/" target="_blank" style="text-decoration: none; color: #0077b5;">
+                💼 LinkedIn
+            </a>
+        </p>
+    </footer>
+
+    <script>
+        // Dynamically set current year in the footer
+        document.getElementById("year").textContent = new Date().getFullYear();
+    </script>
+
+</body>
+</html>
