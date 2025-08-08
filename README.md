@@ -1,95 +1,152 @@
-## 🚀 FastAPI OAuth2 Auth App
+🚀 FastAPI OAuth2 Auth App with Email Verification & Social Login
+A secure, full-featured FastAPI authentication service with:
 
-A simple and secure FastAPI application implementing **OAuth2 with JWT**, user data stored in **MySQL**, and a rendered HTML homepage using **Jinja2 templates**.
+OAuth2 (JWT)
 
----
+Email verification
+
+Password reset via email
+
+Google & GitHub OAuth login
+
+MySQL database
+
+Role-based access control (Admin/User)
+
+Jinja2-powered HTML pages
 
 ## 🔒 Project Screenshots
 
 ![HTML Screen](images/image.png)
 ![Swagger Screen](images/image_2.png)
 ![Authorization Complete](images/image_3.png)
+		
 
+✨ Features
+🔐 JWT Authentication with OAuth2 password flow
 
-### 📁 Features
+📧 Email verification link sent on registration
 
-* 🔐 OAuth2 password flow authentication
-* 🔑 JWT token generation and validation
-* 🧑‍💻 User data fetched from **MySQL**
-* 📄 HTML landing page rendered using Jinja2
-* 🧭 Protected routes using JWT token
-* 🎯 Modern, responsive UI homepage
-* 🔗 Footer with dynamic year, GitHub & LinkedIn links
+🔑 Password reset functionality
 
----
+🌐 Login with Google or GitHub
 
-### 🏁 Getting Started
+🗄 MySQL database integration
 
-#### 1. Clone the repository
+🧑‍💻 Role-based routes (Admin / User)
 
-```bash
+🎨 HTML templates using Jinja2
+
+📜 Swagger/OpenAPI docs included
+
+🛡 Secure password hashing with Passlib
+
+🏁 Getting Started
+1️⃣ Clone the repository
+bash
+Copy
+Edit
 git clone https://github.com/SujayKumarMondal/FastAPI-OAuth2.git
-```
-
-#### 2. Install dependencies
-
-```bash
+cd FastAPI-OAuth2
+2️⃣ Create & activate virtual environment
+bash
+Copy
+Edit
+python -m venv venv
+source venv/bin/activate  # Mac/Linux
+venv\Scripts\activate     # Windows
+3️⃣ Install dependencies
+bash
+Copy
+Edit
 pip install -r requirements.txt
-```
+4️⃣ Configure environment variables
+Create a .env file in the project root:
 
-#### 3. Setup MySQL
+env
+Copy
+Edit
+DATABASE_URL=mysql+pymysql://root:password@localhost:3306/fastapi_auth
+SECRET_KEY=your_secret_key
+ALGORITHM=HS256
+ACCESS_TOKEN_EXPIRE_MINUTES=30
 
-Create your schema and table in MySQL Workbench:
+MAIL_USERNAME=your_email@gmail.com
+MAIL_PASSWORD=your_app_password
+MAIL_FROM=your_email@gmail.com
+MAIL_PORT=587
+MAIL_SERVER=smtp.gmail.com
 
-```
+GOOGLE_CLIENT_ID=your_google_client_id
+GOOGLE_CLIENT_SECRET=your_google_client_secret
+GITHUB_CLIENT_ID=your_github_client_id
+GITHUB_CLIENT_SECRET=your_github_client_secret
+🗄 MySQL Setup
+Run in MySQL Workbench:
 
-> 💡 You can insert/update/delete users directly using MySQL Workbench.
+sql
+Copy
+Edit
+CREATE DATABASE fastapi_auth;
+SQLAlchemy models will auto-create required tables on first run.
 
----
+▶ Run the App
+bash
+Copy
+Edit
+uvicorn main:app --host 0.0.0.0 --port 7001 --reload
+Access:
 
-### 🔐 Authentication Flow
+Homepage: http://localhost:7001/
 
-* First, authorize using the **username and password**.
-* Only users with valid **Google OAuth Client ID and Secret** (already stored or validated in your app logic) can log in.
-* If you don’t have these, generate them from the [Google Cloud Console](https://console.cloud.google.com/).
+Swagger UI: http://localhost:7001/docs
 
----
+🔐 Authentication Flow
+Registration
+POST /register → Create user, send verification email with token.
 
-### 📄 Endpoints
+GET /verify-email?token=... → Mark user as verified.
 
-| Method | Endpoint          | Description                             |
-| ------ | ----------------- | --------------------------------------- |
-| POST   | `/token`          | Get JWT token using username & password |
-| GET    | `/users/me`       | Get current logged-in user info         |
-| GET    | `/users/me/items` | Get dummy items (protected route)       |
-| GET    | `/`               | Renders the `index.html` homepage       |
+Login
+Username/password: POST /login → Returns JWT access token.
 
----
+Google OAuth: GET /auth/google
 
-### 🌐 Homepage
+GitHub OAuth: GET /auth/github
 
-Access your app at below or you can modify the host & port:
+Password Reset
+POST /forgot-password → Send reset token via email.
 
-```bash
-http://localhost:7001/
-```
+POST /reset-password → Reset password using token.
 
-The root page renders `index.html`, which shows documentation, useful links, and info about the auth flow. The footer includes dynamic year and links to your GitHub & LinkedIn.
+Role-based Access
+Admin routes: Require is_admin=True in DB.
 
----
+User routes: Any authenticated & verified user.
 
----
+📄 API Endpoints
+Method	Endpoint	Description	Auth Required
+POST	/register	Register a new user	No
+GET	/verify-email	Verify email using token	No
+POST	/login	Login with username/password	No
+GET	/auth/google	Login with Google	No
+GET	/auth/github	Login with GitHub	No
+POST	/forgot-password	Send password reset link	No
+POST	/reset-password	Reset password	No
+GET	/users/me	Get current user profile	Yes
+GET	/admin/dashboard	Admin dashboard stats	Admin only
 
-### 📜 License
+🌐 Homepage
+Displays project info, links to Swagger UI, GitHub, and LinkedIn.
 
-This project is licensed under the **MIT License**. See the [LICENSE](./LICENSE) file for details.
+Footer dynamically shows the current year.
 
----
+📜 License
+Licensed under the MIT License. See LICENSE for details.
 
-### 🔗 Author Links
+🔗 Author Links
+💼 LinkedIn
 
-* [💼 LinkedIn](https://www.linkedin.com/in/sujay-kumar-mondal-a125481b7/)
-* [🔗 GitHub](https://github.com/SujayKumarMondal)
+🔗 GitHub
 
----
-
+If you want, I can also add example Swagger request/response payloads for every endpoint in this README so people know exactly how to use your API without guessing. That would make it even more developer-friendly.
