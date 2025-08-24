@@ -2,7 +2,6 @@ from fastapi import APIRouter, Depends, HTTPException, status, BackgroundTasks
 from sqlalchemy.orm import Session
 from fastapi.security import OAuth2PasswordRequestForm
 from datetime import timedelta
-
 import auth, config, email_utils
 from database import get_db
 from models import UserTable
@@ -13,13 +12,32 @@ router = APIRouter(tags=["Authentication"])
 
 
 @router.post("/register", response_model=dict)
-def register_user(user_data: UserCreate, background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
+def register_user(user_data: UserCreate,background_tasks: BackgroundTasks,db: Session = Depends(get_db)):
+    # Check if user already exists
     existing_user = db.query(UserTable).filter(
         (UserTable.username == user_data.username) | (UserTable.email == user_data.email)
     ).first()
-    if existing_user:
-        raise HTTPException(status_code=400, detail="Username or email already registered")
 
+    if existing_user:
+        # ✅ Return tokens for existing user
+        access_token = auth.create_access_token(
+            {"sub": existing_user.email}, timedelta(minutes=15)
+        )
+        refresh_token = auth.create_refresh_token(
+            {"sub": existing_user.email}, timedelta(days=7)
+        )
+        
+        verification_token = auth.create_access_token({"sub": user_data.email}, timedelta(minutes=60))
+        
+        return {
+            "message": "User already registered. Returning tokens.",
+            "access_token": access_token,
+            "refresh_token": refresh_token,
+            "token_type": "bearer",
+            "verification_token": verification_token,
+        }
+
+    # ✅ Create new user
     hashed_password = auth.get_password_hash(user_data.password)
     new_user = UserTable(
         username=user_data.username,
@@ -33,7 +51,9 @@ def register_user(user_data: UserCreate, background_tasks: BackgroundTasks, db: 
     db.refresh(new_user)
 
     # Generate verification token
-    verification_token = auth.create_access_token({"sub": user_data.email}, timedelta(minutes=60))
+    verification_token = auth.create_access_token(
+        {"sub": user_data.email}, timedelta(minutes=60)
+    )
     verification_link = f"http://localhost:7001/verify-email?token={verification_token}"
 
     # Send verification email in background
@@ -44,11 +64,17 @@ def register_user(user_data: UserCreate, background_tasks: BackgroundTasks, db: 
         body=f"<p>Click <a href='{verification_link}'>here</a> to verify your email.</p>"
     )
 
-    # Return in Swagger (for testing)
+    # ✅ Also issue tokens for newly registered user
+    access_token = auth.create_access_token({"sub": user_data.email}, timedelta(minutes=15))
+    refresh_token = auth.create_refresh_token({"sub": user_data.email}, timedelta(days=7))
+
     return {
         "message": "User registered successfully. Please verify your email.",
-        "verification_token": verification_token,
-        "verification_link": verification_link
+        "access_token": access_token,
+        "refresh_token": refresh_token,
+        "token_type": "bearer",
+        "verification_token": verification_token,   # for Swagger testing
+        "verification_link": verification_link      # for Swagger testing
     }
 
     
@@ -79,22 +105,27 @@ def verify_email(token: str, db: Session = Depends(get_db)):
 def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
     user = auth.authenticate_user(db, form_data.username, form_data.password)
     if not user:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Incorrect username or password")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect username or password"
+        )
     if not user.is_verified:
-        raise HTTPException(status_code=403, detail="Please verify your email first")
+        raise HTTPException(
+            status_code=403,
+            detail="Please verify your email first"
+        )
 
     access_token = auth.create_access_token(
         data={"sub": user.username},
         expires_delta=timedelta(minutes=config.ACCESS_TOKEN_EXPIRE_MINUTES)
     )
-    refresh_token = auth.create_refresh_token({"sub": user.username})
+    refresh_token = auth.create_refresh_token({"sub": user.username}, expires_delta=timedelta(minutes=config.ACCESS_TOKEN_EXPIRE_MINUTES))
 
     return {
         "access_token": access_token,
         "refresh_token": refresh_token,
         "token_type": "bearer"
     }
-
 
 @router.post("/refresh", response_model=Token)
 def refresh_token(token: str, db: Session = Depends(get_db)):
