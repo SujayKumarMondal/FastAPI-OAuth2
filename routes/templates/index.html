@@ -19,7 +19,7 @@
         }
         main {
             padding: 2rem;
-            max-width: 800px;
+            max-width: 900px;
             margin: auto;
             background-color: white;
             margin-top: 2rem;
@@ -31,6 +31,12 @@
         }
         ul {
             padding-left: 1.5rem;
+        }
+        code {
+            background: #f1f1f1;
+            padding: 2px 6px;
+            border-radius: 5px;
+            font-size: 0.95rem;
         }
         footer {
             text-align: center;
@@ -59,16 +65,33 @@
             All user data is securely stored in a <strong>MySQL database</strong> and fetched dynamically during authentication.
         </p>
 
-        <h3>Useful Endpoints</h3>
+        <h3>Available Endpoints</h3>
         <ul>
-            <li><code>POST /token</code> – Get a JWT token by providing Username, Password, Client ID, and Client Secret</li>
-            <li><code>GET /users/me</code> – Get the current logged-in user's data (requires token)</li>
-            <li><code>GET /users/me/items</code> – Access protected user-specific items (requires token)</li>
+            <li><code>GET /</code> – Starting page, read root of the API</li>
+        </ul>
+
+        <h3>🔐 Authentication</h3>
+        <ul>
+            <li><code>POST /register</code> – Register a new user</li>
+            <li><code>GET /verify-email</code> – Verify a user’s email address</li>
+            <li><code>POST /token</code> – Login and obtain a JWT token</li>
+            <li><code>POST /refresh</code> – Refresh an expired token</li>
+        </ul>
+
+        <h3>👤 User</h3>
+        <ul>
+            <li><code>GET /users/me</code> – Get the current logged-in user’s details (requires token)</li>
+        </ul>
+
+        <h3>🔑 Password Management</h3>
+        <ul>
+            <li><code>POST /password-reset-request</code> – Request a password reset via email</li>
+            <li><code>POST /password-reset-confirm</code> – Confirm password reset with a new password</li>
         </ul>
     </main>
 
     <footer>
-        <p>&copy; <span id="year"></span> FastAPI Project</p>
+        <p>&copy; <span id="year"></span> FastAPI Auth Project</p>
         <p>
             <a href="https://github.com/SujayKumarMondal" target="_blank" style="margin-right: 1rem; text-decoration: none; color: #333;">
                 🔗 GitHub
