@@ -94,12 +94,12 @@ SQLAlchemy models will auto-create required tables on first run.
 bash
 Copy
 Edit
-uvicorn main:app --host 0.0.0.0 --port 7001 --reload
+uvicorn main:app --host 0.0.0.0 --port 7003 --reload
 Access:
 
-Homepage: http://localhost:7001/
+Homepage: http://localhost:7003/
 
-Swagger UI: http://localhost:7001/docs
+Swagger UI: http://localhost:7003/docs
 
 🔐 Authentication Flow
 Registration

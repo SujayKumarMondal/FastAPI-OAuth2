@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 
 from config import EMAIL_USER, EMAIL_PORT, EMAIL_HOST, EMAIL_PASS, ACCESS_TOKEN_EXPIRE_MINUTES, REFRESH_TOKEN_EXPIRE_DAYS, SECRET_KEY, ALGORITHM
 from database import get_db
-from models import UserTable
+from models import UserTable, PasswordResetToken, TokenBlacklist
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
@@ -37,16 +37,30 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     to_encode.update({"exp": expire})
     return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
 
-def create_refresh_token(data: dict):
-    expire = datetime.utcnow() + timedelta(days=REFRESH_TOKEN_EXPIRE_DAYS)
-    data.update({"exp": expire})
-    return jwt.encode(data, SECRET_KEY, algorithm=ALGORITHM)
+def create_refresh_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:
+    to_encode = data.copy()
+    if expires_delta:
+        expire = datetime.utcnow() + expires_delta
+    else:
+        expire = datetime.utcnow() + timedelta(days=REFRESH_TOKEN_EXPIRE_DAYS)
+    to_encode.update({"exp": expire})
+    return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+
+def is_token_blacklisted(db: Session, token: str) -> bool:
+    """Check if token is in blacklist"""
+    blacklisted = db.query(TokenBlacklist).filter(TokenBlacklist.token == token).first()
+    return blacklisted is not None
 
 async def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED, detail="Could not validate credentials",
         headers={"WWW-Authenticate": "Bearer"}
     )
+    
+    # Check if token is blacklisted
+    if is_token_blacklisted(db, token):
+        raise HTTPException(status_code=401, detail="Token has been revoked")
+    
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         username: str = payload.get("sub")
@@ -66,6 +80,15 @@ async def get_current_active_user(current_user: UserTable = Depends(get_current_
     return current_user
 
 def require_admin(current_user: UserTable = Depends(get_current_active_user)):
-    if current_user.role != "admin":
+    if current_user.role.name != "admin":
         raise HTTPException(status_code=403, detail="Admin privileges required")
     return current_user
+
+def verify_reset_token(token: str, db: Session) -> Optional[PasswordResetToken]:
+    """Verify and get password reset token from database"""
+    reset_token = db.query(PasswordResetToken).filter(
+        PasswordResetToken.token == token,
+        PasswordResetToken.used == False,
+        PasswordResetToken.expires_at > datetime.utcnow()
+    ).first()
+    return reset_token
